@@ -11,11 +11,6 @@ Configurable to send any message you like with configurable rules for each win (
 
 ## Quick install (gist)
 
-A ready-to-install build is checked in at [`dist/auto-ez.user.js`](dist/auto-ez.user.js)
-— **no build step required**. Tampermonkey auto-detects any URL ending in `.user.js`
-and offers a one-click install, and a GitHub gist's *raw* URL ends with the file's
-name, so a gist file named `auto-ez.user.js` is directly installable:
-
 1. Install [Tampermonkey](https://www.tampermonkey.net/) or
    [Violentmonkey](https://violentmonkey.github.io/).
 2. Copy the contents of [`dist/auto-ez.user.js`](dist/auto-ez.user.js) into a new
