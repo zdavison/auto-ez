@@ -35,6 +35,13 @@ export interface Opponent {
   /** Player title, e.g. "GM", "BOT". */
   title?: string;
   rating?: number;
+  /**
+   * Origin country as a lichess flag code, populated from the public user API
+   * at game start. Absent if the opponent has none or the fetch hasn't resolved.
+   * @example "US"
+   * @example "GB-ENG"
+   */
+  country?: string;
 }
 
 /** A finished game, normalized from lichess's `endData` socket message + page context. */
