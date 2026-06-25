@@ -6,7 +6,7 @@
  */
 export {};
 
-const VERSION = "0.1.0";
+const VERSION = "0.2.0";
 
 /** Canonical install/update source: the built userscript on the repo's default branch. */
 const RAW_URL =
