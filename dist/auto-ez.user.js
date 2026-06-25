@@ -10,6 +10,8 @@
 // @grant        GM_setValue
 // @grant        GM_registerMenuCommand
 // @grant        unsafeWindow
+// @downloadURL  https://raw.githubusercontent.com/zdavison/auto-ez/main/dist/auto-ez.user.js
+// @updateURL    https://raw.githubusercontent.com/zdavison/auto-ez/main/dist/auto-ez.user.js
 // @noframes
 // ==/UserScript==
 

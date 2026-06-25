@@ -9,21 +9,19 @@ By default, sends `'ez'` in chat when you flag (win on time).
 
 Configurable to send any message you like with configurable rules for each win (or loss) condition.
 
-## Quick install (gist)
+## Quick install
 
 1. Install [Tampermonkey](https://www.tampermonkey.net/) or
    [Violentmonkey](https://violentmonkey.github.io/).
-2. Copy the contents of [`dist/auto-ez.user.js`](dist/auto-ez.user.js) into a new
-   **public** [gist](https://gist.github.com/), naming the gist file
-   `auto-ez.user.js`.
-3. On the gist page, click **Raw**. The address bar will read something like
-   `https://gist.githubusercontent.com/<user>/<id>/raw/auto-ez.user.js`.
-4. Tampermonkey detects the `.user.js` suffix and opens its install page — click
-   **Install**. (If it doesn't trigger automatically, paste that raw URL into a new
-   tab.)
+2. Open the raw userscript URL:
+   **[`raw.githubusercontent.com/zdavison/auto-ez/main/dist/auto-ez.user.js`](https://raw.githubusercontent.com/zdavison/auto-ez/main/dist/auto-ez.user.js)**.
+   The `.user.js` suffix makes Tampermonkey/Violentmonkey open their install page —
+   click **Install**.
 
-To update later, edit the gist and reopen the raw URL; Tampermonkey re-prompts when
-the `@version` in the metadata block is bumped.
+That's it. Updates are automatic: the script carries `@updateURL`/`@downloadURL`
+pointing at that raw file, so your manager re-prompts whenever the `@version` is
+bumped on `main` (raw GitHub has a ~5-minute CDN cache, so a fresh push may take a
+few minutes to surface).
 
 ## Configuring rules
 
