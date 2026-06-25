@@ -1,10 +1,10 @@
 /**
  * Condition registry.
  *
- * A condition is a named predicate over a {@link GameResult}. v1 ships `outcome`
- * and `method`; future condition types (country, username, material) register here
- * with a {@link PROPERTY_PRIORITY} weight and an entry in {@link evaluateCondition},
- * and the matcher needs no changes.
+ * A condition is a named predicate over a {@link GameResult}. New condition types
+ * register here by adding a variant to {@link ConditionSpec} and a case in
+ * {@link evaluateCondition}; the matcher needs no changes. Rule priority is the
+ * order rules appear in the config, not any per-condition weight.
  */
 import type { GameResult, Outcome, Method } from "../types.ts";
 
@@ -19,21 +19,6 @@ export type ConditionSpec =
 
 /** All condition `type` values currently supported. */
 export type ConditionType = ConditionSpec["type"];
-
-/**
- * Per-property specificity weight. Higher = more specific / more important, used
- * only as a tiebreak when two rules have the same number of conditions.
- *
- * Includes weights for not-yet-implemented properties so the ordering is stable
- * as those matchers land.
- */
-export const PROPERTY_PRIORITY: Record<string, number> = {
-  country: 100,
-  username: 90,
-  material: 80,
-  method: 50,
-  outcome: 40,
-};
 
 const warned = new Set<string>();
 /** Log `message` under `[auto-ez]` at most once, so a bad stored value can't spam the console. */

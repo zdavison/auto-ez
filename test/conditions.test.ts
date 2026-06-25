@@ -1,5 +1,5 @@
 import { test, expect, describe } from "bun:test";
-import { evaluateCondition, PROPERTY_PRIORITY } from "../src/conditions/index.ts";
+import { evaluateCondition } from "../src/conditions/index.ts";
 import type { GameResult } from "../src/types.ts";
 
 const baseResult: GameResult = {
@@ -64,14 +64,5 @@ describe("evaluateCondition", () => {
 
   test("country condition fails when the opponent has no country", () => {
     expect(evaluateCondition({ type: "country", value: "US" }, baseResult)).toBe(false);
-  });
-});
-
-describe("PROPERTY_PRIORITY", () => {
-  test("orders properties most-specific first", () => {
-    expect(PROPERTY_PRIORITY.country!).toBeGreaterThan(PROPERTY_PRIORITY.username!);
-    expect(PROPERTY_PRIORITY.username!).toBeGreaterThan(PROPERTY_PRIORITY.material!);
-    expect(PROPERTY_PRIORITY.material!).toBeGreaterThan(PROPERTY_PRIORITY.method!);
-    expect(PROPERTY_PRIORITY.method!).toBeGreaterThan(PROPERTY_PRIORITY.outcome!);
   });
 });

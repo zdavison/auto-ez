@@ -5,7 +5,6 @@ import type { Rule } from "../src/matcher.ts";
 const rule = (id: string, cooldownMs?: number): Rule => ({
   id,
   enabled: true,
-  order: 0,
   when: [{ type: "outcome", value: "win" }],
   message: "ez",
   cooldownMs,

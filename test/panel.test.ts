@@ -10,14 +10,13 @@ function makeConfig(): Config {
       {
         id: "ez-on-flag",
         enabled: true,
-        order: 0,
         when: [
           { type: "outcome", value: "win" },
           { type: "method", value: "outoftime" },
         ],
         message: "ez",
       },
-      { id: "blank", enabled: false, order: 1, when: [], message: "" },
+      { id: "blank", enabled: false, when: [], message: "" },
     ],
   };
 }
@@ -28,6 +27,7 @@ function makeHandlers(): PanelHandlers {
     onAddRule: mock(),
     onDeleteRule: mock(),
     onUpdateRule: mock(),
+    onMoveRule: mock(),
   };
 }
 
@@ -152,5 +152,27 @@ describe("renderPanel", () => {
     input.value = "[";
     input.dispatchEvent(new Event("input"));
     expect(handlers.onUpdateRule).not.toHaveBeenCalled();
+  });
+
+  test("clicking move up calls onMoveRule with 'up'", () => {
+    renderPanel(root, makeConfig(), handlers);
+    q<HTMLButtonElement>(".aez-rule[data-rule-id='blank'] .aez-move-up").click();
+    expect(handlers.onMoveRule).toHaveBeenCalledWith("blank", "up");
+  });
+
+  test("clicking move down calls onMoveRule with 'down'", () => {
+    renderPanel(root, makeConfig(), handlers);
+    q<HTMLButtonElement>(".aez-rule[data-rule-id='ez-on-flag'] .aez-move-down").click();
+    expect(handlers.onMoveRule).toHaveBeenCalledWith("ez-on-flag", "down");
+  });
+
+  test("disables move up on the first rule and move down on the last", () => {
+    renderPanel(root, makeConfig(), handlers);
+    const first = q(".aez-rule[data-rule-id='ez-on-flag']");
+    const last = q(".aez-rule[data-rule-id='blank']");
+    expect(first.querySelector<HTMLButtonElement>(".aez-move-up")!.disabled).toBe(true);
+    expect(first.querySelector<HTMLButtonElement>(".aez-move-down")!.disabled).toBe(false);
+    expect(last.querySelector<HTMLButtonElement>(".aez-move-up")!.disabled).toBe(false);
+    expect(last.querySelector<HTMLButtonElement>(".aez-move-down")!.disabled).toBe(true);
   });
 });

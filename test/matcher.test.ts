@@ -1,5 +1,5 @@
 import { test, expect, describe } from "bun:test";
-import { selectMessage, matchRule, sortRules, type Rule } from "../src/matcher.ts";
+import { selectMessage, matchRule, type Rule } from "../src/matcher.ts";
 import type { GameResult } from "../src/types.ts";
 
 const result: GameResult = {
@@ -12,7 +12,7 @@ const result: GameResult = {
 };
 
 function rule(partial: Partial<Rule> & Pick<Rule, "id" | "when" | "message">): Rule {
-  return { enabled: true, order: 0, ...partial };
+  return { enabled: true, ...partial };
 }
 
 describe("selectMessage", () => {
@@ -57,23 +57,30 @@ describe("selectMessage", () => {
     expect(selectMessage(result, rules)).toBe("on");
   });
 
-  test("more specific (more conditions) rule wins over a broader one", () => {
-    const broad = rule({ id: "broad", order: 0, when: [{ type: "outcome", value: "win" }], message: "broad" });
-    const specific = rule({
-      id: "specific",
-      order: 1, // later insertion, but more conditions => should still win
+  test("list order is priority: the first matching rule wins", () => {
+    const first = rule({ id: "first", when: [{ type: "outcome", value: "win" }], message: "first" });
+    const second = rule({
+      id: "second",
       when: [
         { type: "outcome", value: "win" },
         { type: "method", value: "outoftime" },
       ],
-      message: "specific",
+      message: "second",
     });
-    expect(selectMessage(result, [broad, specific])).toBe("specific");
+    // The broader rule listed first wins, even though `second` is more specific.
+    expect(selectMessage(result, [first, second])).toBe("first");
+  });
+
+  test("reordering changes the winner", () => {
+    const a = rule({ id: "a", when: [{ type: "outcome", value: "win" }], message: "a" });
+    const b = rule({ id: "b", when: [{ type: "outcome", value: "win" }], message: "b" });
+    expect(selectMessage(result, [a, b])).toBe("a");
+    expect(selectMessage(result, [b, a])).toBe("b");
   });
 });
 
 describe("matchRule", () => {
-  test("returns the winning rule, not just its message", () => {
+  test("returns the first matching enabled rule, not just its message", () => {
     const rules = [
       rule({ id: "ez", when: [{ type: "outcome", value: "win" }], message: "ez" }),
     ];
@@ -83,64 +90,12 @@ describe("matchRule", () => {
   test("returns null when nothing matches", () => {
     expect(matchRule(result, [rule({ id: "x", when: [{ type: "outcome", value: "loss" }], message: "" })])).toBeNull();
   });
-});
 
-describe("sortRules", () => {
-  test("primary: more conditions ranks higher", () => {
-    const a = rule({ id: "a", when: [{ type: "outcome", value: "win" }], message: "" });
-    const b = rule({
-      id: "b",
-      when: [
-        { type: "outcome", value: "win" },
-        { type: "method", value: "mate" },
-      ],
-      message: "",
-    });
-    expect(sortRules([a, b]).map((r) => r.id)).toEqual(["b", "a"]);
-  });
-
-  test("tiebreak: among equal counts, higher-priority property ranks first", () => {
-    // Both 2-condition. Country (100) outranks method (50) on the top weight.
-    const countryRule = rule({
-      id: "country",
-      // country isn't a v1 predicate, but ordering keys off the property type only.
-      when: [
-        { type: "country", value: "FR" },
-        { type: "outcome", value: "win" },
-      ] as unknown as Rule["when"],
-      message: "",
-    });
-    const methodRule = rule({
-      id: "method",
-      when: [
-        { type: "method", value: "mate" },
-        { type: "outcome", value: "win" },
-      ],
-      message: "",
-    });
-    expect(sortRules([methodRule, countryRule]).map((r) => r.id)).toEqual(["country", "method"]);
-  });
-
-  test("final tiebreak: lower order first for otherwise-identical rules", () => {
-    const second = rule({ id: "second", order: 5, when: [{ type: "outcome", value: "win" }], message: "" });
-    const first = rule({ id: "first", order: 1, when: [{ type: "outcome", value: "win" }], message: "" });
-    expect(sortRules([second, first]).map((r) => r.id)).toEqual(["first", "second"]);
-  });
-
-  test("sorts country above username above method above outcome on the weight tiebreak", () => {
-    const mk = (id: string, type: "country" | "username" | "method" | "outcome", value: string) => ({
-      id,
-      enabled: true,
-      order: 0,
-      when: [{ type, value } as const],
-      message: id,
-    });
+  test("a disabled rule earlier in the list does not shadow a later matching one", () => {
     const rules = [
-      mk("outcome", "outcome", "win"),
-      mk("method", "method", "mate"),
-      mk("username", "username", "bob"),
-      mk("country", "country", "US"),
+      rule({ id: "off", enabled: false, when: [{ type: "outcome", value: "win" }], message: "off" }),
+      rule({ id: "on", when: [{ type: "outcome", value: "win" }], message: "on" }),
     ];
-    expect(sortRules(rules).map((r) => r.id)).toEqual(["country", "username", "method", "outcome"]);
+    expect(matchRule(result, rules)?.id).toBe("on");
   });
 });

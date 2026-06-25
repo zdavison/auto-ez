@@ -16,7 +16,7 @@ Manifest V3 browser extension.
 
 - `src/detector/` — WebSocket hook + page-context reading + result normalization
 - `src/conditions/` — pluggable condition predicates + property-priority index
-- `src/matcher.ts` — rule engine (sort most-specific-first, first match wins)
+- `src/matcher.ts` — rule engine (first enabled rule in list order that matches wins; user-reorderable)
 - `src/gate.ts` — once-per-game dedupe + cooldowns
 - `src/sender.ts` — types into lichess's chat input
 - `src/config.ts` + `src/storage.ts` — rules table + persistence (swappable adapter)
