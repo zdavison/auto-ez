@@ -1,7 +1,7 @@
 # auto-ez
 
 <img width="348" height="114" alt="image" src="https://github.com/user-attachments/assets/4af5bfad-b4f0-4e5e-99aa-18f9f66eaa21" />
-<img width="351" height="80" alt="image" src="https://github.com/user-attachments/assets/7b547c5e-3f1e-45c5-bfad-a301d09cdc22" />
+<img width="367" height="73" alt="image" src="https://github.com/user-attachments/assets/4806f6e9-f53a-4ab9-aadb-b08177cb6b01" />
 
 Automatically taunt your lichess opponent when you win under certain conditions.
 
