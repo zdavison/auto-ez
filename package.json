@@ -1,0 +1,16 @@
+{
+  "name": "auto-bm",
+  "version": "0.1.0",
+  "description": "Lichess auto-message userscript (extension-ready)",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "bun test",
+    "build": "bun run build.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/tampermonkey": "^5.0.5",
+    "happy-dom": "^20.10.6"
+  }
+}
