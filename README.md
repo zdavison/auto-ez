@@ -9,30 +9,23 @@ By default, sends `'ez'` in chat when you flag (win on time).
 
 Configurable to send any message you like with configurable rules for each win (or loss) condition.
 
-## Quick install (gist)
+## Quick install
 
 1. Install [Tampermonkey](https://www.tampermonkey.net/) or
    [Violentmonkey](https://violentmonkey.github.io/).
-2. Copy the contents of [`dist/auto-ez.user.js`](dist/auto-ez.user.js) into a new
-   **public** [gist](https://gist.github.com/), naming the gist file
-   `auto-ez.user.js`.
-3. On the gist page, click **Raw**. The address bar will read something like
-   `https://gist.githubusercontent.com/<user>/<id>/raw/auto-ez.user.js`.
-4. Tampermonkey detects the `.user.js` suffix and opens its install page — click
-   **Install**. (If it doesn't trigger automatically, paste that raw URL into a new
-   tab.)
+2. Open the raw userscript URL:
+   **[`raw.githubusercontent.com/zdavison/auto-ez/main/dist/auto-ez.user.js`](https://raw.githubusercontent.com/zdavison/auto-ez/main/dist/auto-ez.user.js)**.
+   The `.user.js` suffix makes Tampermonkey/Violentmonkey open their install page —
+   click **Install**.
 
-To update later, edit the gist and reopen the raw URL; Tampermonkey re-prompts when
-the `@version` in the metadata block is bumped.
+That's it. Updates are automatic.
 
 ## Configuring rules
 
 <img width="378" height="218" alt="image" src="https://github.com/user-attachments/assets/67204cf3-5b5b-4cf5-b305-b4c0c0e9b05b" />
 
 Click the floating **`ez`** button (bottom-right of any lichess page) to open the
-settings panel. There you can flip the master on/off switch, add or delete rules,
-toggle each rule, edit its message, and set its **outcome** and **method** conditions
-from dropdowns (`—` means "any"). 
+settings panel to modify rules.
 
 Changes save automatically and apply to the next game.
 
@@ -42,5 +35,3 @@ Changes save automatically and apply to the next game.
 bun test          # run tests
 bun run build     # produce dist/auto-ez.user.js
 ```
-
-See `docs/superpowers/specs/` for the design spec.
