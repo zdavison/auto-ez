@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         auto-ez
 // @namespace    https://github.com/auto-ez
-// @version      0.2.0
+// @version      0.2.1
 // @description  Auto-send chat messages on lichess.org under configurable conditions (e.g. "ez" on a win by flag).
 // @author       auto-ez
 // @match        https://lichess.org/*
@@ -638,6 +638,13 @@ function mountUI(storage, parent = document.body) {
     const container = document.createElement("div");
     container.className = "aez-container";
     button.addEventListener("click", () => container.classList.toggle("aez-open"));
+    const shieldKeys = (e) => {
+      if (container.classList.contains("aez-open"))
+        e.stopPropagation();
+    };
+    for (const type of ["keydown", "keypress", "keyup"]) {
+      shadow.addEventListener(type, shieldKeys);
+    }
     shadow.append(style, button, container);
     const rerender = () => renderPanel(container, loadConfig(storage), handlers);
     const mutate = (fn) => {

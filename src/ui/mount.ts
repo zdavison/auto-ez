@@ -59,6 +59,19 @@ export function mountUI(storage: Storage, parent: HTMLElement = document.body): 
 
     button.addEventListener("click", () => container.classList.toggle("aez-open"));
 
+    // Lichess registers global keyboard shortcuts on `document` (e.g. "s" opens
+    // search). Our inputs live in this shadow DOM, so events crossing the boundary
+    // are retargeted to the host <div> — lichess's "is the user typing in a field?"
+    // guard sees a div, not an input, and fires the shortcut, stealing focus. While
+    // the panel is open, stop key events originating inside it from reaching those
+    // document listeners. stopPropagation() leaves text entry in our inputs intact.
+    const shieldKeys = (e: Event) => {
+      if (container.classList.contains("aez-open")) e.stopPropagation();
+    };
+    for (const type of ["keydown", "keypress", "keyup"] as const) {
+      shadow.addEventListener(type, shieldKeys);
+    }
+
     shadow.append(style, button, container);
 
     const rerender = () => renderPanel(container, loadConfig(storage), handlers);

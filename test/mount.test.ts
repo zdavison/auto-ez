@@ -72,3 +72,50 @@ describe("mountUI", () => {
     expect(rule.when.find((c) => c.type === "outcome")).toEqual({ type: "outcome", value: "loss" });
   });
 });
+
+describe("keyboard shielding", () => {
+  const keydown = () =>
+    new KeyboardEvent("keydown", { key: "s", bubbles: true, composed: true, cancelable: true });
+
+  test("lets panel keystrokes reach the document while the panel is closed", () => {
+    mountUI(storage);
+    let received = 0;
+    const onDoc = () => received++;
+    document.addEventListener("keydown", onDoc);
+    shadow().querySelector<HTMLInputElement>(".aez-message")!.dispatchEvent(keydown());
+    document.removeEventListener("keydown", onDoc);
+    expect(received).toBe(1);
+  });
+
+  test("blocks panel keystrokes from reaching the document while open", () => {
+    mountUI(storage);
+    shadow().querySelector(".aez-container")!.classList.add("aez-open");
+    let received = 0;
+    const onDoc = () => received++;
+    document.addEventListener("keydown", onDoc);
+    shadow().querySelector<HTMLInputElement>(".aez-message")!.dispatchEvent(keydown());
+    document.removeEventListener("keydown", onDoc);
+    expect(received).toBe(0);
+  });
+
+  test("blocks keypress and keyup too while open", () => {
+    mountUI(storage);
+    shadow().querySelector(".aez-container")!.classList.add("aez-open");
+    let received = 0;
+    const onDoc = () => received++;
+    const input = shadow().querySelector<HTMLInputElement>(".aez-message")!;
+    for (const type of ["keypress", "keyup"] as const) document.addEventListener(type, onDoc);
+    input.dispatchEvent(new KeyboardEvent("keypress", { bubbles: true, composed: true }));
+    input.dispatchEvent(new KeyboardEvent("keyup", { bubbles: true, composed: true }));
+    for (const type of ["keypress", "keyup"] as const) document.removeEventListener(type, onDoc);
+    expect(received).toBe(0);
+  });
+
+  test("does not preventDefault, so typing in our own inputs still works", () => {
+    mountUI(storage);
+    shadow().querySelector(".aez-container")!.classList.add("aez-open");
+    const event = keydown();
+    shadow().querySelector<HTMLInputElement>(".aez-message")!.dispatchEvent(event);
+    expect(event.defaultPrevented).toBe(false);
+  });
+});
