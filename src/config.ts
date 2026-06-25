@@ -13,7 +13,7 @@ export interface Config {
   globalCooldownMs: number;
 }
 
-const STORAGE_KEY = "auto-bm:config";
+const STORAGE_KEY = "auto-ez:config";
 
 /** Shipped defaults: enabled, with the single `win + outoftime -> "ez"` rule. */
 export const DEFAULT_CONFIG: Config = {
@@ -40,7 +40,7 @@ export function loadConfig(storage: Storage): Config {
   try {
     return JSON.parse(raw) as Config;
   } catch {
-    console.warn("[auto-bm] stored config is corrupt; using defaults");
+    console.warn("[auto-ez] stored config is corrupt; using defaults");
     return structuredClone(DEFAULT_CONFIG);
   }
 }

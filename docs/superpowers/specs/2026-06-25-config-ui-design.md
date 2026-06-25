@@ -1,4 +1,4 @@
-# auto-bm Config UI — Design
+# auto-ez Config UI — Design
 
 **Status:** NOT-RELEASED (local dev only)
 **Date:** 2026-06-25
@@ -6,7 +6,7 @@
 
 ## Summary
 
-An in-page settings UI for editing auto-bm's rules, opened by a small floating
+An in-page settings UI for editing auto-ez's rules, opened by a small floating
 **`ez`** button on lichess pages. Full rule management (master toggle; add/delete
 rules; edit message, enabled, and conditions). Rendered in a shadow DOM so styles
 are isolated from lichess. Edits auto-save and take effect immediately.
@@ -115,7 +115,7 @@ The only real logic. Two pure functions:
 
 ## Error handling
 
-- `mountUI` wrapped in try/catch: logs under `[auto-bm]`, no-ops on failure so a UI
+- `mountUI` wrapped in try/catch: logs under `[auto-ez]`, no-ops on failure so a UI
   error never breaks lichess or the sender.
 - Corrupt stored config still falls back to defaults (existing behavior).
 - All rendering reads from validated config; unknown condition types in `when[]` are

@@ -42,7 +42,7 @@ describe("loadConfig", () => {
   });
 
   test("falls back to default when stored value is corrupt", () => {
-    const storage = mockStorage({ "auto-bm:config": "not json{" });
+    const storage = mockStorage({ "auto-ez:config": "not json{" });
     expect(loadConfig(storage)).toEqual(DEFAULT_CONFIG);
   });
 });

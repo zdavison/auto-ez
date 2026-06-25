@@ -52,14 +52,14 @@ src/
   storage.ts      # Storage adapter: GM_*/localStorage now, chrome.storage later
   main.ts         # wiring + userscript metadata header
 dist/
-  auto-bm.user.js # built artifact (Tampermonkey-installable)
+  auto-ez.user.js # built artifact (Tampermonkey-installable)
 ```
 
 - **Extension-ready:** all userscript-/DOM-specific access is isolated. `config`
   reads/writes only through the `Storage` adapter interface; `detector`/`matcher`/
   `sender` expose storage-agnostic, DOM-agnostic interfaces. Swapping the storage
   impl for `chrome.storage` is the only change an extension needs in this layer.
-- **Build:** Bun bundles `src/main.ts` -> `dist/auto-bm.user.js`, prepending the
+- **Build:** Bun bundles `src/main.ts` -> `dist/auto-ez.user.js`, prepending the
   userscript metadata block (`@match https://lichess.org/*`, `@grant GM_getValue`,
   `GM_setValue`, `GM_registerMenuCommand`).
 
@@ -209,7 +209,7 @@ interface Config {
 
 The script must never break the lichess page.
 
-- All hooks/handlers wrapped in try/catch; failures log under an `[auto-bm]` prefix
+- All hooks/handlers wrapped in try/catch; failures log under an `[auto-ez]` prefix
   and otherwise no-op.
 - Detector emits at most once per game (dedupe by `gameId`); sender respects
   cooldowns so a reload/re-fire cannot double-send.

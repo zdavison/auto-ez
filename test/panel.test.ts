@@ -47,33 +47,33 @@ const qa = (sel: string) => [...root.querySelectorAll(sel)];
 describe("renderPanel", () => {
   test("renders the master toggle reflecting config.enabled", () => {
     renderPanel(root, makeConfig(), handlers);
-    expect(q<HTMLInputElement>(".abm-master").checked).toBe(true);
+    expect(q<HTMLInputElement>(".aez-master").checked).toBe(true);
   });
 
   test("renders one card per rule", () => {
     renderPanel(root, makeConfig(), handlers);
-    expect(qa(".abm-rule")).toHaveLength(2);
+    expect(qa(".aez-rule")).toHaveLength(2);
   });
 
   test("preselects each rule's outcome, method and message", () => {
     renderPanel(root, makeConfig(), handlers);
-    const card = q(".abm-rule[data-rule-id='ez-on-flag']");
-    expect(card.querySelector<HTMLSelectElement>(".abm-outcome")!.value).toBe("win");
-    expect(card.querySelector<HTMLSelectElement>(".abm-method")!.value).toBe("outoftime");
-    expect(card.querySelector<HTMLInputElement>(".abm-message")!.value).toBe("ez");
-    expect(card.querySelector<HTMLInputElement>(".abm-enabled")!.checked).toBe(true);
+    const card = q(".aez-rule[data-rule-id='ez-on-flag']");
+    expect(card.querySelector<HTMLSelectElement>(".aez-outcome")!.value).toBe("win");
+    expect(card.querySelector<HTMLSelectElement>(".aez-method")!.value).toBe("outoftime");
+    expect(card.querySelector<HTMLInputElement>(".aez-message")!.value).toBe("ez");
+    expect(card.querySelector<HTMLInputElement>(".aez-enabled")!.checked).toBe(true);
   });
 
   test("an absent condition shows the empty option", () => {
     renderPanel(root, makeConfig(), handlers);
-    const card = q(".abm-rule[data-rule-id='blank']");
-    expect(card.querySelector<HTMLSelectElement>(".abm-outcome")!.value).toBe("");
-    expect(card.querySelector<HTMLSelectElement>(".abm-method")!.value).toBe("");
+    const card = q(".aez-rule[data-rule-id='blank']");
+    expect(card.querySelector<HTMLSelectElement>(".aez-outcome")!.value).toBe("");
+    expect(card.querySelector<HTMLSelectElement>(".aez-method")!.value).toBe("");
   });
 
   test("toggling the master switch calls onToggleMaster", () => {
     renderPanel(root, makeConfig(), handlers);
-    const master = q<HTMLInputElement>(".abm-master");
+    const master = q<HTMLInputElement>(".aez-master");
     master.checked = false;
     master.dispatchEvent(new Event("change", { bubbles: true }));
     expect(handlers.onToggleMaster).toHaveBeenCalledWith(false);
@@ -81,19 +81,19 @@ describe("renderPanel", () => {
 
   test("clicking add calls onAddRule", () => {
     renderPanel(root, makeConfig(), handlers);
-    q<HTMLButtonElement>(".abm-add").click();
+    q<HTMLButtonElement>(".aez-add").click();
     expect(handlers.onAddRule).toHaveBeenCalled();
   });
 
   test("clicking delete calls onDeleteRule with the rule id", () => {
     renderPanel(root, makeConfig(), handlers);
-    q<HTMLButtonElement>(".abm-rule[data-rule-id='blank'] .abm-delete").click();
+    q<HTMLButtonElement>(".aez-rule[data-rule-id='blank'] .aez-delete").click();
     expect(handlers.onDeleteRule).toHaveBeenCalledWith("blank");
   });
 
   test("editing the message calls onUpdateRule with the new message", () => {
     renderPanel(root, makeConfig(), handlers);
-    const input = q<HTMLInputElement>(".abm-rule[data-rule-id='ez-on-flag'] .abm-message");
+    const input = q<HTMLInputElement>(".aez-rule[data-rule-id='ez-on-flag'] .aez-message");
     input.value = "gg";
     input.dispatchEvent(new Event("input", { bubbles: true }));
     expect(handlers.onUpdateRule).toHaveBeenCalledWith("ez-on-flag", { message: "gg" });
@@ -101,7 +101,7 @@ describe("renderPanel", () => {
 
   test("changing the outcome calls onUpdateRule with the new outcome", () => {
     renderPanel(root, makeConfig(), handlers);
-    const sel = q<HTMLSelectElement>(".abm-rule[data-rule-id='ez-on-flag'] .abm-outcome");
+    const sel = q<HTMLSelectElement>(".aez-rule[data-rule-id='ez-on-flag'] .aez-outcome");
     sel.value = "loss";
     sel.dispatchEvent(new Event("change", { bubbles: true }));
     expect(handlers.onUpdateRule).toHaveBeenCalledWith("ez-on-flag", { outcome: "loss" });
@@ -109,7 +109,7 @@ describe("renderPanel", () => {
 
   test("selecting the empty option calls onUpdateRule with undefined", () => {
     renderPanel(root, makeConfig(), handlers);
-    const sel = q<HTMLSelectElement>(".abm-rule[data-rule-id='ez-on-flag'] .abm-method");
+    const sel = q<HTMLSelectElement>(".aez-rule[data-rule-id='ez-on-flag'] .aez-method");
     sel.value = "";
     sel.dispatchEvent(new Event("change", { bubbles: true }));
     expect(handlers.onUpdateRule).toHaveBeenCalledWith("ez-on-flag", { method: undefined });

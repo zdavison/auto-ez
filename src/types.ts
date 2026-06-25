@@ -1,5 +1,5 @@
 /**
- * Shared domain types for auto-bm.
+ * Shared domain types for auto-ez.
  *
  * These describe the normalized game result that the detector produces and the
  * matcher consumes. Keeping them DOM- and storage-agnostic is what lets the same

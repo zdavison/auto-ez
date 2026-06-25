@@ -2,7 +2,7 @@
  * Entry point: wires the detector, matcher, gate, and sender together, and exposes
  * a master on/off toggle via Tampermonkey's menu.
  *
- * Everything here is defensive — any failure logs under `[auto-bm]` and otherwise
+ * Everything here is defensive — any failure logs under `[auto-ez]` and otherwise
  * no-ops, so the script can never break the lichess page.
  */
 import { installWebSocketHook } from "./detector/wsHook.ts";
@@ -21,7 +21,7 @@ import { loadConfig, saveConfig, setEnabled } from "./config.ts";
 import { createDefaultStorage } from "./storage.ts";
 import { mountUI } from "./ui/mount.ts";
 
-const LOG = "[auto-bm]";
+const LOG = "[auto-ez]";
 const MIN_DELAY_MS = 500;
 const MAX_DELAY_MS = 1500;
 
@@ -113,7 +113,7 @@ function handleEndData(endData: EndData): void {
 
 function registerMenu(): void {
   if (typeof GM_registerMenuCommand !== "function") return;
-  GM_registerMenuCommand("auto-bm: toggle on/off", () => {
+  GM_registerMenuCommand("auto-ez: toggle on/off", () => {
     const next = !loadConfig(storage).enabled;
     setEnabled(storage, next);
     console.info(`${LOG} ${next ? "enabled" : "disabled"}`);

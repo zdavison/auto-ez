@@ -54,28 +54,28 @@ function buildSelect(className: string, options: string[], selected: string | un
 function buildRuleCard(rule: Rule, handlers: PanelHandlers): HTMLElement {
   const slots = ruleToSlots(rule);
   const card = document.createElement("div");
-  card.className = "abm-rule";
+  card.className = "aez-rule";
   card.dataset.ruleId = rule.id;
 
   const enabled = document.createElement("input");
   enabled.type = "checkbox";
-  enabled.className = "abm-enabled";
+  enabled.className = "aez-enabled";
   enabled.checked = rule.enabled;
   enabled.addEventListener("change", () => handlers.onUpdateRule(rule.id, { enabled: enabled.checked }));
 
-  const outcome = buildSelect("abm-outcome", OUTCOME_OPTIONS, slots.outcome);
+  const outcome = buildSelect("aez-outcome", OUTCOME_OPTIONS, slots.outcome);
   outcome.addEventListener("change", () =>
     handlers.onUpdateRule(rule.id, { outcome: (outcome.value || undefined) as Outcome | undefined }),
   );
 
-  const method = buildSelect("abm-method", METHOD_OPTIONS, slots.method);
+  const method = buildSelect("aez-method", METHOD_OPTIONS, slots.method);
   method.addEventListener("change", () =>
     handlers.onUpdateRule(rule.id, { method: (method.value || undefined) as Method | undefined }),
   );
 
   const message = document.createElement("input");
   message.type = "text";
-  message.className = "abm-message";
+  message.className = "aez-message";
   message.maxLength = MAX_MESSAGE_LENGTH;
   message.placeholder = "message…";
   message.value = rule.message;
@@ -83,13 +83,13 @@ function buildRuleCard(rule: Rule, handlers: PanelHandlers): HTMLElement {
 
   const del = document.createElement("button");
   del.type = "button";
-  del.className = "abm-delete";
+  del.className = "aez-delete";
   del.textContent = "✕";
   del.title = "Delete rule";
   del.addEventListener("click", () => handlers.onDeleteRule(rule.id));
 
   const condWrap = document.createElement("div");
-  condWrap.className = "abm-conditions";
+  condWrap.className = "aez-conditions";
   condWrap.append(labeled("Outcome", outcome), labeled("Method", method));
 
   card.append(enabled, condWrap, message, del);
@@ -99,7 +99,7 @@ function buildRuleCard(rule: Rule, handlers: PanelHandlers): HTMLElement {
 /** Wrap a control with a small text label. */
 function labeled(text: string, control: HTMLElement): HTMLElement {
   const label = document.createElement("label");
-  label.className = "abm-field";
+  label.className = "aez-field";
   const span = document.createElement("span");
   span.textContent = text;
   label.append(span, control);
@@ -111,16 +111,16 @@ export function renderPanel(root: ShadowRoot | HTMLElement, config: Config, hand
   root.innerHTML = "";
 
   const panel = document.createElement("div");
-  panel.className = "abm-panel";
+  panel.className = "aez-panel";
 
   const header = document.createElement("div");
-  header.className = "abm-header";
+  header.className = "aez-header";
 
   const masterLabel = document.createElement("label");
-  masterLabel.className = "abm-field abm-master-field";
+  masterLabel.className = "aez-field aez-master-field";
   const master = document.createElement("input");
   master.type = "checkbox";
-  master.className = "abm-master";
+  master.className = "aez-master";
   master.checked = config.enabled;
   master.addEventListener("change", () => handlers.onToggleMaster(master.checked));
   const masterText = document.createElement("span");
@@ -129,14 +129,14 @@ export function renderPanel(root: ShadowRoot | HTMLElement, config: Config, hand
 
   const add = document.createElement("button");
   add.type = "button";
-  add.className = "abm-add";
+  add.className = "aez-add";
   add.textContent = "+ Add rule";
   add.addEventListener("click", () => handlers.onAddRule());
 
   header.append(masterLabel, add);
 
   const list = document.createElement("div");
-  list.className = "abm-rules";
+  list.className = "aez-rules";
   for (const rule of config.rules) list.appendChild(buildRuleCard(rule, handlers));
 
   panel.append(header, list);

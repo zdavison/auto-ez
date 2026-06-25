@@ -13,7 +13,7 @@ import { renderPanel, type PanelHandlers, type RulePatch } from "./panel.ts";
 import { applySlot } from "./slots.ts";
 import { PANEL_CSS } from "./styles.ts";
 
-export const UI_ROOT_ID = "abm-root";
+export const UI_ROOT_ID = "aez-root";
 
 let ruleSeq = 0;
 
@@ -48,14 +48,14 @@ export function mountUI(storage: Storage, parent: HTMLElement = document.body): 
 
     const button = document.createElement("button");
     button.type = "button";
-    button.className = "abm-ez-button";
+    button.className = "aez-ez-button";
     button.textContent = "ez";
-    button.title = "auto-bm settings";
+    button.title = "auto-ez settings";
 
     const container = document.createElement("div");
-    container.className = "abm-container";
+    container.className = "aez-container";
 
-    button.addEventListener("click", () => container.classList.toggle("abm-open"));
+    button.addEventListener("click", () => container.classList.toggle("aez-open"));
 
     shadow.append(style, button, container);
 
@@ -77,6 +77,6 @@ export function mountUI(storage: Storage, parent: HTMLElement = document.body): 
     parent.appendChild(hostEl);
     rerender();
   } catch (err) {
-    console.warn("[auto-bm] failed to mount UI", err);
+    console.warn("[auto-ez] failed to mount UI", err);
   }
 }

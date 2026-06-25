@@ -9,11 +9,11 @@ export {};
 const VERSION = "0.1.0";
 
 const banner = `// ==UserScript==
-// @name         auto-bm
-// @namespace    https://github.com/auto-bm
+// @name         auto-ez
+// @namespace    https://github.com/auto-ez
 // @version      ${VERSION}
 // @description  Auto-send chat messages on lichess.org under configurable conditions (e.g. "ez" on a win by flag).
-// @author       auto-bm
+// @author       auto-ez
 // @match        https://lichess.org/*
 // @run-at       document-start
 // @grant        GM_getValue
@@ -42,6 +42,6 @@ if (!artifact) {
 }
 
 const code = await artifact.text();
-const outPath = "./dist/auto-bm.user.js";
+const outPath = "./dist/auto-ez.user.js";
 await Bun.write(outPath, `${banner}\n${code}`);
 console.log(`Wrote ${outPath} (${(code.length / 1024).toFixed(1)} KiB)`);

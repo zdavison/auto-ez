@@ -3,7 +3,7 @@ export const PANEL_CSS = `
 :host { all: initial; }
 * { box-sizing: border-box; font-family: system-ui, sans-serif; }
 
-.abm-ez-button {
+.aez-ez-button {
   position: fixed;
   right: 16px;
   bottom: 16px;
@@ -19,9 +19,9 @@ export const PANEL_CSS = `
   cursor: pointer;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
-.abm-ez-button:hover { background: #2b7fd0; }
+.aez-ez-button:hover { background: #2b7fd0; }
 
-.abm-container {
+.aez-container {
   position: fixed;
   right: 16px;
   bottom: 70px;
@@ -37,9 +37,9 @@ export const PANEL_CSS = `
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
   padding: 12px;
 }
-.abm-container.abm-open { display: block; }
+.aez-container.aez-open { display: block; }
 
-.abm-header {
+.aez-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -48,28 +48,28 @@ export const PANEL_CSS = `
   border-bottom: 1px solid #444;
 }
 
-.abm-field { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; }
-.abm-master-field { font-weight: 700; }
+.aez-field { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; }
+.aez-master-field { font-weight: 700; }
 
-.abm-add {
+.aez-add {
   background: #3893e8; color: #fff; border: none; border-radius: 4px;
   padding: 4px 10px; cursor: pointer; font-size: 12px;
 }
-.abm-add:hover { background: #2b7fd0; }
+.aez-add:hover { background: #2b7fd0; }
 
-.abm-rule {
+.aez-rule {
   display: flex; align-items: center; gap: 6px;
   padding: 8px 0; border-bottom: 1px solid #383838;
 }
-.abm-conditions { display: flex; flex-direction: column; gap: 4px; }
-.abm-rule select, .abm-rule input[type="text"] {
+.aez-conditions { display: flex; flex-direction: column; gap: 4px; }
+.aez-rule select, .aez-rule input[type="text"] {
   background: #1f1f1f; color: #ddd; border: 1px solid #555;
   border-radius: 4px; padding: 2px 4px; font-size: 12px;
 }
-.abm-message { flex: 1; min-width: 60px; }
-.abm-delete {
+.aez-message { flex: 1; min-width: 60px; }
+.aez-delete {
   background: transparent; color: #c33; border: none;
   cursor: pointer; font-size: 14px; line-height: 1;
 }
-.abm-delete:hover { color: #f55; }
+.aez-delete:hover { color: #f55; }
 `;

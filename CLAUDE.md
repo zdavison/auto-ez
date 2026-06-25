@@ -1,4 +1,4 @@
-# auto-bm
+# auto-ez
 
 **Status: NOT-RELEASED** (local dev only; no backwards-compat or migration concerns yet)
 
@@ -10,7 +10,7 @@ Manifest V3 browser extension.
 ## Commands
 
 - `bun test` — run the test suite
-- `bun run build` — bundle `src/main.ts` → `dist/auto-bm.user.js` (installable)
+- `bun run build` — bundle `src/main.ts` → `dist/auto-ez.user.js` (installable)
 
 ## Layout
 

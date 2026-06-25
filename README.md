@@ -1,4 +1,4 @@
-# auto-bm
+# auto-ez
 
 A userscript for [lichess.org](https://lichess.org) that automatically sends a chat
 message when a game ends and a configured rule matches.
@@ -14,7 +14,7 @@ says **`ez`** in chat.
 1. Install [Tampermonkey](https://www.tampermonkey.net/) or
    [Violentmonkey](https://violentmonkey.github.io/).
 2. Build the script: `bun install && bun run build`.
-3. Open `dist/auto-bm.user.js` and install it into your userscript manager
+3. Open `dist/auto-ez.user.js` and install it into your userscript manager
    (Tampermonkey → *Create a new script* → paste, or drag the file in).
 
 ## How it works
@@ -35,7 +35,7 @@ toggle each rule, edit its message, and set its **outcome** and **method** condi
 from dropdowns (`—` means "any"). Changes save automatically and apply to the next
 game — no reload.
 
-Under the hood, rules live in storage as JSON (key `auto-bm:config`). A rule is:
+Under the hood, rules live in storage as JSON (key `auto-ez:config`). A rule is:
 
 ```jsonc
 {
@@ -60,7 +60,7 @@ the engine accepts them without changes.
 
 ```sh
 bun test          # run tests
-bun run build     # produce dist/auto-bm.user.js
+bun run build     # produce dist/auto-ez.user.js
 ```
 
 See `docs/superpowers/specs/` for the design spec.
