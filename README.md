@@ -25,9 +25,7 @@ That's it. Updates are automatic.
 <img width="378" height="218" alt="image" src="https://github.com/user-attachments/assets/67204cf3-5b5b-4cf5-b305-b4c0c0e9b05b" />
 
 Click the floating **`ez`** button (bottom-right of any lichess page) to open the
-settings panel. There you can flip the master on/off switch, add or delete rules,
-toggle each rule, edit its message, and set its **outcome** and **method** conditions
-from dropdowns (`—` means "any"). 
+settings panel to modify rules.
 
 Changes save automatically and apply to the next game.
 
@@ -37,5 +35,3 @@ Changes save automatically and apply to the next game.
 bun test          # run tests
 bun run build     # produce dist/auto-ez.user.js
 ```
-
-See `docs/superpowers/specs/` for the design spec.
