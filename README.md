@@ -18,10 +18,7 @@ Configurable to send any message you like with configurable rules for each win (
    The `.user.js` suffix makes Tampermonkey/Violentmonkey open their install page —
    click **Install**.
 
-That's it. Updates are automatic: the script carries `@updateURL`/`@downloadURL`
-pointing at that raw file, so your manager re-prompts whenever the `@version` is
-bumped on `main` (raw GitHub has a ~5-minute CDN cache, so a fresh push may take a
-few minutes to surface).
+That's it. Updates are automatic.
 
 ## Configuring rules
 
