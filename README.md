@@ -29,7 +29,13 @@ says **`ez`** in chat.
 
 ## Configuring rules
 
-Rules live in storage as JSON (key `auto-bm:config`). A rule is:
+Click the floating **`ez`** button (bottom-right of any lichess page) to open the
+settings panel. There you can flip the master on/off switch, add or delete rules,
+toggle each rule, edit its message, and set its **outcome** and **method** conditions
+from dropdowns (`—` means "any"). Changes save automatically and apply to the next
+game — no reload.
+
+Under the hood, rules live in storage as JSON (key `auto-bm:config`). A rule is:
 
 ```jsonc
 {

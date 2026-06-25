@@ -19,6 +19,7 @@ import { SendGate } from "./gate.ts";
 import { typeAndSend } from "./sender.ts";
 import { loadConfig, saveConfig, setEnabled } from "./config.ts";
 import { createDefaultStorage } from "./storage.ts";
+import { mountUI } from "./ui/mount.ts";
 
 const LOG = "[auto-bm]";
 const MIN_DELAY_MS = 500;
@@ -92,6 +93,7 @@ function handleEndData(endData: EndData): void {
     if (!rule) return debug("no rule matched");
     debug("matched rule", rule.id, "->", rule.message);
 
+    if (rule.message.trim() === "") return debug("rule message blank; skipping");
     if (!gate.tryClaim(rule, result.gameId, Date.now())) return debug("blocked by dedupe/cooldown");
 
     const message = rule.message;
@@ -118,12 +120,22 @@ function registerMenu(): void {
   });
 }
 
+/** Mount the settings UI once the document body exists. */
+function mountWhenReady(): void {
+  if (document.body) {
+    mountUI(storage);
+  } else {
+    document.addEventListener("DOMContentLoaded", () => mountUI(storage), { once: true });
+  }
+}
+
 function main(): void {
   try {
     // Ensure a config exists in storage so the menu/defaults are stable.
     saveConfig(storage, loadConfig(storage));
     installWebSocketHook(handleEndData, { scope: pageScope, onMessageType: noteMessageType });
     registerMenu();
+    mountWhenReady();
     console.info(`${LOG} active${DEBUG ? " (debug)" : ""}`);
   } catch (err) {
     console.warn(`${LOG} failed to initialize`, err);

@@ -1,0 +1,144 @@
+/**
+ * Render the settings panel DOM from a {@link Config}.
+ *
+ * The panel is logic-free: every interaction calls a handler passed in by the
+ * caller (`mount.ts`), which owns load/save/re-render. Re-rendering rebuilds the
+ * panel from the current config.
+ */
+import type { Config } from "../config.ts";
+import type { Rule } from "../matcher.ts";
+import type { Outcome, Method } from "../types.ts";
+import { ruleToSlots } from "./slots.ts";
+import { MAX_MESSAGE_LENGTH } from "../sender.ts";
+
+/** A patch describing a single edit to one rule. */
+export interface RulePatch {
+  enabled?: boolean;
+  outcome?: Outcome | undefined;
+  method?: Method | undefined;
+  message?: string;
+}
+
+export interface PanelHandlers {
+  onToggleMaster(enabled: boolean): void;
+  onAddRule(): void;
+  onDeleteRule(id: string): void;
+  onUpdateRule(id: string, patch: RulePatch): void;
+}
+
+const OUTCOME_OPTIONS: Outcome[] = ["win", "loss", "draw"];
+const METHOD_OPTIONS: Method[] = [
+  "mate",
+  "resign",
+  "outoftime",
+  "timeout",
+  "stalemate",
+  "draw",
+  "variantEnd",
+];
+
+/** Build a `<select>` with an empty "—" option plus `options`, preselecting `selected`. */
+function buildSelect(className: string, options: string[], selected: string | undefined): HTMLSelectElement {
+  const select = document.createElement("select");
+  select.className = className;
+  for (const value of ["", ...options]) {
+    const opt = document.createElement("option");
+    opt.value = value;
+    opt.textContent = value === "" ? "—" : value;
+    select.appendChild(opt);
+  }
+  select.value = selected ?? "";
+  return select;
+}
+
+function buildRuleCard(rule: Rule, handlers: PanelHandlers): HTMLElement {
+  const slots = ruleToSlots(rule);
+  const card = document.createElement("div");
+  card.className = "abm-rule";
+  card.dataset.ruleId = rule.id;
+
+  const enabled = document.createElement("input");
+  enabled.type = "checkbox";
+  enabled.className = "abm-enabled";
+  enabled.checked = rule.enabled;
+  enabled.addEventListener("change", () => handlers.onUpdateRule(rule.id, { enabled: enabled.checked }));
+
+  const outcome = buildSelect("abm-outcome", OUTCOME_OPTIONS, slots.outcome);
+  outcome.addEventListener("change", () =>
+    handlers.onUpdateRule(rule.id, { outcome: (outcome.value || undefined) as Outcome | undefined }),
+  );
+
+  const method = buildSelect("abm-method", METHOD_OPTIONS, slots.method);
+  method.addEventListener("change", () =>
+    handlers.onUpdateRule(rule.id, { method: (method.value || undefined) as Method | undefined }),
+  );
+
+  const message = document.createElement("input");
+  message.type = "text";
+  message.className = "abm-message";
+  message.maxLength = MAX_MESSAGE_LENGTH;
+  message.placeholder = "message…";
+  message.value = rule.message;
+  message.addEventListener("input", () => handlers.onUpdateRule(rule.id, { message: message.value }));
+
+  const del = document.createElement("button");
+  del.type = "button";
+  del.className = "abm-delete";
+  del.textContent = "✕";
+  del.title = "Delete rule";
+  del.addEventListener("click", () => handlers.onDeleteRule(rule.id));
+
+  const condWrap = document.createElement("div");
+  condWrap.className = "abm-conditions";
+  condWrap.append(labeled("Outcome", outcome), labeled("Method", method));
+
+  card.append(enabled, condWrap, message, del);
+  return card;
+}
+
+/** Wrap a control with a small text label. */
+function labeled(text: string, control: HTMLElement): HTMLElement {
+  const label = document.createElement("label");
+  label.className = "abm-field";
+  const span = document.createElement("span");
+  span.textContent = text;
+  label.append(span, control);
+  return label;
+}
+
+/** Render (or re-render) the panel into `root` from `config`. */
+export function renderPanel(root: ShadowRoot | HTMLElement, config: Config, handlers: PanelHandlers): void {
+  root.innerHTML = "";
+
+  const panel = document.createElement("div");
+  panel.className = "abm-panel";
+
+  const header = document.createElement("div");
+  header.className = "abm-header";
+
+  const masterLabel = document.createElement("label");
+  masterLabel.className = "abm-field abm-master-field";
+  const master = document.createElement("input");
+  master.type = "checkbox";
+  master.className = "abm-master";
+  master.checked = config.enabled;
+  master.addEventListener("change", () => handlers.onToggleMaster(master.checked));
+  const masterText = document.createElement("span");
+  masterText.textContent = "Enabled";
+  masterLabel.append(master, masterText);
+
+  const add = document.createElement("button");
+  add.type = "button";
+  add.className = "abm-add";
+  add.textContent = "+ Add rule";
+  add.addEventListener("click", () => handlers.onAddRule());
+
+  header.append(masterLabel, add);
+
+  const list = document.createElement("div");
+  list.className = "abm-rules";
+  for (const rule of config.rules) list.appendChild(buildRuleCard(rule, handlers));
+
+  panel.append(header, list);
+  root.appendChild(panel);
+}

@@ -22,6 +22,7 @@ export const MAX_MESSAGE_LENGTH = 140;
  * otherwise (e.g. chat disabled/absent). Never throws.
  */
 export function typeAndSend(root: Document | HTMLElement, message: string): boolean {
+  if (message.trim() === "") return false; // never send blank (e.g. half-configured rule)
   const input = root.querySelector<HTMLInputElement>(CHAT_INPUT_SELECTOR);
   if (!input) return false;
 

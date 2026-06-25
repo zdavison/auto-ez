@@ -43,6 +43,12 @@ describe("typeAndSend", () => {
     expect(typeAndSend(document, "ez")).toBe(false);
   });
 
+  test("does not send a blank message", () => {
+    const chat = attachLichessLikeChat();
+    expect(typeAndSend(document, "   ")).toBe(false);
+    expect(chat.sent).toEqual([]);
+  });
+
   test("truncates messages longer than the lichess limit", () => {
     const chat = attachLichessLikeChat();
     typeAndSend(document, "x".repeat(200));
