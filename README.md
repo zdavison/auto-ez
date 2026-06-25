@@ -9,13 +9,34 @@ says **`ez`** in chat.
 > ⚠️ Taunting can be reported on lichess. Use responsibly. There's a master on/off
 > toggle in the Tampermonkey menu and a per-rule `enabled` flag.
 
-## Install
+## Quick install (gist)
+
+A ready-to-install build is checked in at [`dist/auto-ez.user.js`](dist/auto-ez.user.js)
+— **no build step required**. Tampermonkey auto-detects any URL ending in `.user.js`
+and offers a one-click install, and a GitHub gist's *raw* URL ends with the file's
+name, so a gist file named `auto-ez.user.js` is directly installable:
 
 1. Install [Tampermonkey](https://www.tampermonkey.net/) or
    [Violentmonkey](https://violentmonkey.github.io/).
-2. Build the script: `bun install && bun run build`.
-3. Open `dist/auto-ez.user.js` and install it into your userscript manager
-   (Tampermonkey → *Create a new script* → paste, or drag the file in).
+2. Copy the contents of [`dist/auto-ez.user.js`](dist/auto-ez.user.js) into a new
+   **public** [gist](https://gist.github.com/), naming the gist file
+   `auto-ez.user.js`.
+3. On the gist page, click **Raw**. The address bar will read something like
+   `https://gist.githubusercontent.com/<user>/<id>/raw/auto-ez.user.js`.
+4. Tampermonkey detects the `.user.js` suffix and opens its install page — click
+   **Install**. (If it doesn't trigger automatically, paste that raw URL into a new
+   tab.)
+
+To update later, edit the gist and reopen the raw URL; Tampermonkey re-prompts when
+the `@version` in the metadata block is bumped.
+
+## Install (manual)
+
+1. Install [Tampermonkey](https://www.tampermonkey.net/) or
+   [Violentmonkey](https://violentmonkey.github.io/).
+2. Open the checked-in [`dist/auto-ez.user.js`](dist/auto-ez.user.js) and install it
+   into your userscript manager (Tampermonkey → *Create a new script* → paste, or
+   drag the file in). To rebuild from source instead: `bun install && bun run build`.
 
 ## How it works
 

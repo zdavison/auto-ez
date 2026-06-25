@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "test": "bun test",
-    "build": "bun run build.ts"
+    "build": "bun run build.ts",
+    "build:check": "bun run build.ts && git diff --exit-code -- dist/auto-ez.user.js"
   },
   "devDependencies": {
     "@types/bun": "latest",
