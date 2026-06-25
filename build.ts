@@ -8,6 +8,10 @@ export {};
 
 const VERSION = "0.1.0";
 
+/** Canonical install/update source: the built userscript on the repo's default branch. */
+const RAW_URL =
+  "https://raw.githubusercontent.com/zdavison/auto-ez/main/dist/auto-ez.user.js";
+
 const banner = `// ==UserScript==
 // @name         auto-ez
 // @namespace    https://github.com/auto-ez
@@ -19,7 +23,11 @@ const banner = `// ==UserScript==
 // @grant        GM_getValue
 // @grant        GM_setValue
 // @grant        GM_registerMenuCommand
+// @grant        GM_xmlhttpRequest
 // @grant        unsafeWindow
+// @connect      lichess.org
+// @downloadURL  ${RAW_URL}
+// @updateURL    ${RAW_URL}
 // @noframes
 // ==/UserScript==
 `;
