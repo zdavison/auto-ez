@@ -26,6 +26,8 @@ export interface PanelHandlers {
   onAddRule(): void;
   onDeleteRule(id: string): void;
   onUpdateRule(id: string, patch: RulePatch): void;
+  /** Move a rule one step up (higher priority) or down (lower priority) in the list. */
+  onMoveRule(id: string, direction: "up" | "down"): void;
 }
 
 const OUTCOME_OPTIONS: Outcome[] = ["win", "loss", "draw"];
@@ -53,7 +55,7 @@ function buildSelect(className: string, options: string[], selected: string | un
   return select;
 }
 
-function buildRuleCard(rule: Rule, handlers: PanelHandlers): HTMLElement {
+function buildRuleCard(rule: Rule, handlers: PanelHandlers, index: number, total: number): HTMLElement {
   const slots = ruleToSlots(rule);
   const card = document.createElement("div");
   card.className = "aez-rule";
@@ -112,6 +114,22 @@ function buildRuleCard(rule: Rule, handlers: PanelHandlers): HTMLElement {
   message.value = rule.message;
   message.addEventListener("input", () => handlers.onUpdateRule(rule.id, { message: message.value }));
 
+  const up = document.createElement("button");
+  up.type = "button";
+  up.className = "aez-move-up";
+  up.textContent = "▲";
+  up.title = "Move up (higher priority)";
+  up.disabled = index === 0;
+  up.addEventListener("click", () => handlers.onMoveRule(rule.id, "up"));
+
+  const down = document.createElement("button");
+  down.type = "button";
+  down.className = "aez-move-down";
+  down.textContent = "▼";
+  down.title = "Move down (lower priority)";
+  down.disabled = index === total - 1;
+  down.addEventListener("click", () => handlers.onMoveRule(rule.id, "down"));
+
   const del = document.createElement("button");
   del.type = "button";
   del.className = "aez-delete";
@@ -128,7 +146,7 @@ function buildRuleCard(rule: Rule, handlers: PanelHandlers): HTMLElement {
     labeled("Country", country),
   );
 
-  card.append(enabled, condWrap, message, del);
+  card.append(enabled, condWrap, message, up, down, del);
   return card;
 }
 
@@ -173,7 +191,7 @@ export function renderPanel(root: ShadowRoot | HTMLElement, config: Config, hand
 
   const list = document.createElement("div");
   list.className = "aez-rules";
-  for (const rule of config.rules) list.appendChild(buildRuleCard(rule, handlers));
+  config.rules.forEach((rule, i) => list.appendChild(buildRuleCard(rule, handlers, i, config.rules.length)));
 
   panel.append(header, list);
   root.appendChild(panel);

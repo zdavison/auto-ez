@@ -18,10 +18,24 @@ export const UI_ROOT_ID = "aez-root";
 let ruleSeq = 0;
 
 /** A fresh, inert rule (enabled but blank message, so it can't fire until configured). */
-function newRule(config: Config): Rule {
-  const maxOrder = config.rules.reduce((m, r) => Math.max(m, r.order), -1);
+function newRule(): Rule {
   ruleSeq += 1;
-  return { id: `rule-${Date.now()}-${ruleSeq}`, enabled: true, order: maxOrder + 1, when: [], message: "" };
+  return { id: `rule-${Date.now()}-${ruleSeq}`, enabled: true, when: [], message: "" };
+}
+
+/**
+ * Return a new rules array with the rule `id` moved one step toward the top
+ * (`"up"`) or bottom (`"down"`). List order is rule priority, so this is how the
+ * user re-ranks rules. A no-op if the rule is absent or already at the edge.
+ */
+function moveRule(rules: Rule[], id: string, direction: "up" | "down"): Rule[] {
+  const i = rules.findIndex((r) => r.id === id);
+  if (i === -1) return rules;
+  const j = direction === "up" ? i - 1 : i + 1;
+  if (j < 0 || j >= rules.length) return rules;
+  const next = [...rules];
+  [next[i], next[j]] = [next[j]!, next[i]!];
+  return next;
 }
 
 /** Apply a {@link RulePatch} to a rule, returning a new rule. */
@@ -83,10 +97,11 @@ export function mountUI(storage: Storage, parent: HTMLElement = document.body): 
 
     const handlers: PanelHandlers = {
       onToggleMaster: (enabled) => mutate((c) => ({ ...c, enabled })),
-      onAddRule: () => mutate((c) => ({ ...c, rules: [...c.rules, newRule(c)] })),
+      onAddRule: () => mutate((c) => ({ ...c, rules: [...c.rules, newRule()] })),
       onDeleteRule: (id) => mutate((c) => ({ ...c, rules: c.rules.filter((r) => r.id !== id) })),
       onUpdateRule: (id, patch) =>
         mutate((c) => ({ ...c, rules: c.rules.map((r) => (r.id === id ? patchRule(r, patch) : r)) })),
+      onMoveRule: (id, direction) => mutate((c) => ({ ...c, rules: moveRule(c.rules, id, direction) })),
     };
 
     parent.appendChild(hostEl);

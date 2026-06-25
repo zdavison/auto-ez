@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         auto-ez
 // @namespace    https://github.com/auto-ez
-// @version      0.2.1
+// @version      0.2.2
 // @description  Auto-send chat messages on lichess.org under configurable conditions (e.g. "ez" on a win by flag).
 // @author       auto-ez
 // @match        https://lichess.org/*
@@ -207,13 +207,6 @@ function normalizeEndData(endData, context) {
 }
 
 // src/conditions/index.ts
-var PROPERTY_PRIORITY = {
-  country: 100,
-  username: 90,
-  material: 80,
-  method: 50,
-  outcome: 40
-};
 var warned = new Set;
 function warnOnce(message) {
   if (warned.has(message))
@@ -249,36 +242,12 @@ function evaluateCondition(spec, result) {
 }
 
 // src/matcher.ts
-function weightsDescending(rule) {
-  return rule.when.map((c) => PROPERTY_PRIORITY[c.type] ?? 0).sort((a, b) => b - a);
-}
-function compareWeights(a, b) {
-  const len = Math.max(a.length, b.length);
-  for (let i = 0;i < len; i++) {
-    const diff = (a[i] ?? 0) - (b[i] ?? 0);
-    if (diff !== 0)
-      return diff;
-  }
-  return 0;
-}
-function compareRules(a, b) {
-  if (a.when.length !== b.when.length)
-    return b.when.length - a.when.length;
-  const byWeight = compareWeights(weightsDescending(b), weightsDescending(a));
-  if (byWeight !== 0)
-    return byWeight;
-  return a.order - b.order;
-}
-function sortRules(rules) {
-  return [...rules].sort(compareRules);
-}
 function ruleMatches(rule, result) {
   return rule.when.every((spec) => evaluateCondition(spec, result));
 }
 function matchRule(result, rules) {
-  const candidates = sortRules(rules.filter((r) => r.enabled));
-  for (const rule of candidates) {
-    if (ruleMatches(rule, result))
+  for (const rule of rules) {
+    if (rule.enabled && ruleMatches(rule, result))
       return rule;
   }
   return null;
@@ -334,7 +303,6 @@ var DEFAULT_CONFIG = {
     {
       id: "ez-on-flag",
       enabled: true,
-      order: 0,
       when: [
         { type: "outcome", value: "win" },
         { type: "method", value: "outoftime" }
@@ -425,7 +393,7 @@ function buildSelect(className, options, selected) {
   select.value = selected ?? "";
   return select;
 }
-function buildRuleCard(rule, handlers) {
+function buildRuleCard(rule, handlers, index, total) {
   const slots = ruleToSlots(rule);
   const card = document.createElement("div");
   card.className = "aez-rule";
@@ -471,6 +439,20 @@ function buildRuleCard(rule, handlers) {
   message.placeholder = "message…";
   message.value = rule.message;
   message.addEventListener("input", () => handlers.onUpdateRule(rule.id, { message: message.value }));
+  const up = document.createElement("button");
+  up.type = "button";
+  up.className = "aez-move-up";
+  up.textContent = "▲";
+  up.title = "Move up (higher priority)";
+  up.disabled = index === 0;
+  up.addEventListener("click", () => handlers.onMoveRule(rule.id, "up"));
+  const down = document.createElement("button");
+  down.type = "button";
+  down.className = "aez-move-down";
+  down.textContent = "▼";
+  down.title = "Move down (lower priority)";
+  down.disabled = index === total - 1;
+  down.addEventListener("click", () => handlers.onMoveRule(rule.id, "down"));
   const del = document.createElement("button");
   del.type = "button";
   del.className = "aez-delete";
@@ -480,7 +462,7 @@ function buildRuleCard(rule, handlers) {
   const condWrap = document.createElement("div");
   condWrap.className = "aez-conditions";
   condWrap.append(labeled("Outcome", outcome), labeled("Method", method), labeled("Username", username), labeled("Country", country));
-  card.append(enabled, condWrap, message, del);
+  card.append(enabled, condWrap, message, up, down, del);
   return card;
 }
 function labeled(text, control) {
@@ -515,8 +497,7 @@ function renderPanel(root, config, handlers) {
   header.append(masterLabel, add);
   const list = document.createElement("div");
   list.className = "aez-rules";
-  for (const rule of config.rules)
-    list.appendChild(buildRuleCard(rule, handlers));
+  config.rules.forEach((rule, i) => list.appendChild(buildRuleCard(rule, handlers, i, config.rules.length)));
   panel.append(header, list);
   root.appendChild(panel);
 }
@@ -595,15 +576,31 @@ var PANEL_CSS = `
   cursor: pointer; font-size: 14px; line-height: 1;
 }
 .aez-delete:hover { color: #f55; }
+.aez-move-up, .aez-move-down {
+  background: transparent; color: #aaa; border: none;
+  cursor: pointer; font-size: 11px; line-height: 1; padding: 0 2px;
+}
+.aez-move-up:hover, .aez-move-down:hover { color: #fff; }
+.aez-move-up:disabled, .aez-move-down:disabled { color: #555; cursor: default; }
 `;
 
 // src/ui/mount.ts
 var UI_ROOT_ID = "aez-root";
 var ruleSeq = 0;
-function newRule(config) {
-  const maxOrder = config.rules.reduce((m, r) => Math.max(m, r.order), -1);
+function newRule() {
   ruleSeq += 1;
-  return { id: `rule-${Date.now()}-${ruleSeq}`, enabled: true, order: maxOrder + 1, when: [], message: "" };
+  return { id: `rule-${Date.now()}-${ruleSeq}`, enabled: true, when: [], message: "" };
+}
+function moveRule(rules, id, direction) {
+  const i = rules.findIndex((r) => r.id === id);
+  if (i === -1)
+    return rules;
+  const j = direction === "up" ? i - 1 : i + 1;
+  if (j < 0 || j >= rules.length)
+    return rules;
+  const next = [...rules];
+  [next[i], next[j]] = [next[j], next[i]];
+  return next;
 }
 function patchRule(rule, patch) {
   let next = rule;
@@ -653,9 +650,10 @@ function mountUI(storage, parent = document.body) {
     };
     const handlers = {
       onToggleMaster: (enabled) => mutate((c) => ({ ...c, enabled })),
-      onAddRule: () => mutate((c) => ({ ...c, rules: [...c.rules, newRule(c)] })),
+      onAddRule: () => mutate((c) => ({ ...c, rules: [...c.rules, newRule()] })),
       onDeleteRule: (id) => mutate((c) => ({ ...c, rules: c.rules.filter((r) => r.id !== id) })),
-      onUpdateRule: (id, patch) => mutate((c) => ({ ...c, rules: c.rules.map((r) => r.id === id ? patchRule(r, patch) : r) }))
+      onUpdateRule: (id, patch) => mutate((c) => ({ ...c, rules: c.rules.map((r) => r.id === id ? patchRule(r, patch) : r) })),
+      onMoveRule: (id, direction) => mutate((c) => ({ ...c, rules: moveRule(c.rules, id, direction) }))
     };
     parent.appendChild(hostEl);
     rerender();

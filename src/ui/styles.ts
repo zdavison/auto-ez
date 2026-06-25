@@ -72,4 +72,10 @@ export const PANEL_CSS = `
   cursor: pointer; font-size: 14px; line-height: 1;
 }
 .aez-delete:hover { color: #f55; }
+.aez-move-up, .aez-move-down {
+  background: transparent; color: #aaa; border: none;
+  cursor: pointer; font-size: 11px; line-height: 1; padding: 0 2px;
+}
+.aez-move-up:hover, .aez-move-down:hover { color: #fff; }
+.aez-move-up:disabled, .aez-move-down:disabled { color: #555; cursor: default; }
 `;

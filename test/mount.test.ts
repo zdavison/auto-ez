@@ -71,6 +71,20 @@ describe("mountUI", () => {
     const rule = loadConfig(storage).rules[0]!;
     expect(rule.when.find((c) => c.type === "outcome")).toEqual({ type: "outcome", value: "loss" });
   });
+
+  test("moving a rule down reorders and persists the rules array", () => {
+    mountUI(storage);
+    // Add a second rule so there are two to reorder.
+    shadow().querySelector<HTMLButtonElement>(".aez-add")!.click();
+    const before = loadConfig(storage).rules.map((r) => r.id);
+    expect(before.length).toBe(2);
+
+    const firstCard = shadow().querySelector<HTMLElement>(".aez-rule")!;
+    firstCard.querySelector<HTMLButtonElement>(".aez-move-down")!.click();
+
+    const after = loadConfig(storage).rules.map((r) => r.id);
+    expect(after).toEqual([before[1]!, before[0]!]);
+  });
 });
 
 describe("keyboard shielding", () => {

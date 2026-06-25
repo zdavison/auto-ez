@@ -2,7 +2,7 @@ import { test, expect, describe } from "bun:test";
 import { ruleToSlots, applySlot } from "../src/ui/slots.ts";
 import type { Rule } from "../src/matcher.ts";
 
-const rule = (when: Rule["when"]): Rule => ({ id: "r", enabled: true, order: 0, when, message: "ez" });
+const rule = (when: Rule["when"]): Rule => ({ id: "r", enabled: true, when, message: "ez" });
 
 describe("ruleToSlots", () => {
   test("extracts outcome and method values from conditions", () => {

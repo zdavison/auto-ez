@@ -23,7 +23,6 @@ export const DEFAULT_CONFIG: Config = {
     {
       id: "ez-on-flag",
       enabled: true,
-      order: 0,
       when: [
         { type: "outcome", value: "win" },
         { type: "method", value: "outoftime" },
