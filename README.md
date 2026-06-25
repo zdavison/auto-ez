@@ -1,13 +1,13 @@
 # auto-ez
 
-A userscript for [lichess.org](https://lichess.org) that automatically sends a chat
-message when a game ends and a configured rule matches.
+<img width="348" height="114" alt="image" src="https://github.com/user-attachments/assets/4af5bfad-b4f0-4e5e-99aa-18f9f66eaa21" />
+<img width="351" height="80" alt="image" src="https://github.com/user-attachments/assets/7b547c5e-3f1e-45c5-bfad-a301d09cdc22" />
 
-Out of the box: when you **win a real-time game on time** (your opponent flags), it
-says **`ez`** in chat.
+Automatically taunt your lichess opponent when you win under certain conditions.
 
-> ⚠️ Taunting can be reported on lichess. Use responsibly. There's a master on/off
-> toggle in the Tampermonkey menu and a per-rule `enabled` flag.
+By default, sends `'ez'` in chat when you flag (win on time).
+
+Configurable to send any message you like with configurable rules for each win (or loss) condition.
 
 ## Quick install (gist)
 
@@ -30,52 +30,16 @@ name, so a gist file named `auto-ez.user.js` is directly installable:
 To update later, edit the gist and reopen the raw URL; Tampermonkey re-prompts when
 the `@version` in the metadata block is bumped.
 
-## Install (manual)
-
-1. Install [Tampermonkey](https://www.tampermonkey.net/) or
-   [Violentmonkey](https://violentmonkey.github.io/).
-2. Open the checked-in [`dist/auto-ez.user.js`](dist/auto-ez.user.js) and install it
-   into your userscript manager (Tampermonkey → *Create a new script* → paste, or
-   drag the file in). To rebuild from source instead: `bun install && bun run build`.
-
-## How it works
-
-| Stage     | What happens                                                                 |
-| --------- | ---------------------------------------------------------------------------- |
-| Detect    | Hooks the round WebSocket, reads the `endData` frame (status + winner).       |
-| Scope     | Only acts in real-time games vs a human that **you** are playing.             |
-| Match     | Evaluates your rules, most-specific-first; the first full match wins.         |
-| Gate      | One message per game; global + optional per-rule cooldown.                    |
-| Send      | Types the message into the chat input after a short randomized delay.         |
-
 ## Configuring rules
+
+<img width="378" height="218" alt="image" src="https://github.com/user-attachments/assets/67204cf3-5b5b-4cf5-b305-b4c0c0e9b05b" />
 
 Click the floating **`ez`** button (bottom-right of any lichess page) to open the
 settings panel. There you can flip the master on/off switch, add or delete rules,
 toggle each rule, edit its message, and set its **outcome** and **method** conditions
-from dropdowns (`—` means "any"). Changes save automatically and apply to the next
-game — no reload.
+from dropdowns (`—` means "any"). 
 
-Under the hood, rules live in storage as JSON (key `auto-ez:config`). A rule is:
-
-```jsonc
-{
-  "id": "ez-on-flag",
-  "enabled": true,
-  "order": 0,
-  "when": [
-    { "type": "outcome", "value": "win" },      // win | loss | draw
-    { "type": "method",  "value": "outoftime" } // mate | resign | outoftime | ...
-  ],
-  "message": "ez"
-}
-```
-
-Rules are ranked by **number of conditions** (more = more specific), then by
-**property priority** (e.g. `country` > `username` > `material` > `method` >
-`outcome`), then by `order`. The first rule whose conditions all match sends its
-message. More condition types (country, username, material advantage) are planned;
-the engine accepts them without changes.
+Changes save automatically and apply to the next game.
 
 ## Development
 
