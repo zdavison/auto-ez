@@ -13,14 +13,20 @@ import type { ConditionSpec, ConditionType } from "../conditions/index.ts";
 export interface Slots {
   outcome?: Outcome;
   method?: Method;
+  /** Opponent username regex. @example "^hikaru" */
+  username?: string;
+  /** Comma-separated flag codes. @example "US, CA" */
+  country?: string;
 }
 
-/** Read the first `outcome` and `method` condition values out of a rule. */
+/** Read the first `outcome`, `method`, `username`, and `country` condition values out of a rule. */
 export function ruleToSlots(rule: Rule): Slots {
   const slots: Slots = {};
   for (const c of rule.when) {
     if (c.type === "outcome" && slots.outcome === undefined) slots.outcome = c.value;
     else if (c.type === "method" && slots.method === undefined) slots.method = c.value;
+    else if (c.type === "username" && slots.username === undefined) slots.username = c.value;
+    else if (c.type === "country" && slots.country === undefined) slots.country = c.value;
   }
   return slots;
 }

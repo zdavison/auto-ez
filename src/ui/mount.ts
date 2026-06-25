@@ -31,6 +31,8 @@ function patchRule(rule: Rule, patch: RulePatch): Rule {
   if (patch.message !== undefined) next = { ...next, message: patch.message };
   if ("outcome" in patch) next = applySlot(next, "outcome", patch.outcome);
   if ("method" in patch) next = applySlot(next, "method", patch.method);
+  if ("username" in patch) next = applySlot(next, "username", patch.username);
+  if ("country" in patch) next = applySlot(next, "country", patch.country);
   return next;
 }
 

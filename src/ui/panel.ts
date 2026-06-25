@@ -16,6 +16,8 @@ export interface RulePatch {
   enabled?: boolean;
   outcome?: Outcome | undefined;
   method?: Method | undefined;
+  username?: string | undefined;
+  country?: string | undefined;
   message?: string;
 }
 
@@ -73,6 +75,35 @@ function buildRuleCard(rule: Rule, handlers: PanelHandlers): HTMLElement {
     handlers.onUpdateRule(rule.id, { method: (method.value || undefined) as Method | undefined }),
   );
 
+  const username = document.createElement("input");
+  username.type = "text";
+  username.className = "aez-username";
+  username.placeholder = "regex…";
+  username.value = slots.username ?? "";
+  username.addEventListener("input", () => {
+    const value = username.value || undefined;
+    if (value !== undefined) {
+      try {
+        new RegExp(value);
+      } catch {
+        username.setCustomValidity("Invalid regex");
+        username.reportValidity();
+        return;
+      }
+    }
+    username.setCustomValidity("");
+    handlers.onUpdateRule(rule.id, { username: value });
+  });
+
+  const country = document.createElement("input");
+  country.type = "text";
+  country.className = "aez-country";
+  country.placeholder = "US, CA…";
+  country.value = slots.country ?? "";
+  country.addEventListener("input", () =>
+    handlers.onUpdateRule(rule.id, { country: country.value || undefined }),
+  );
+
   const message = document.createElement("input");
   message.type = "text";
   message.className = "aez-message";
@@ -90,7 +121,12 @@ function buildRuleCard(rule: Rule, handlers: PanelHandlers): HTMLElement {
 
   const condWrap = document.createElement("div");
   condWrap.className = "aez-conditions";
-  condWrap.append(labeled("Outcome", outcome), labeled("Method", method));
+  condWrap.append(
+    labeled("Outcome", outcome),
+    labeled("Method", method),
+    labeled("Username", username),
+    labeled("Country", country),
+  );
 
   card.append(enabled, condWrap, message, del);
   return card;

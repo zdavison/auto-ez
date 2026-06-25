@@ -56,3 +56,28 @@ describe("applySlot", () => {
     expect(original.when).toEqual([{ type: "outcome", value: "win" }]);
   });
 });
+
+describe("ruleToSlots — username/country", () => {
+  test("extracts username and country values", () => {
+    const r = rule([
+      { type: "username", value: "^bob" },
+      { type: "country", value: "US, CA" },
+    ]);
+    expect(ruleToSlots(r)).toEqual({ username: "^bob", country: "US, CA" });
+  });
+});
+
+describe("applySlot — username/country", () => {
+  test("adds a username condition without clobbering an existing country", () => {
+    const r = applySlot(rule([{ type: "country", value: "US" }]), "username", "^bob");
+    expect(r.when).toEqual([
+      { type: "country", value: "US" },
+      { type: "username", value: "^bob" },
+    ]);
+  });
+
+  test("removes the country condition when value is undefined", () => {
+    const r = applySlot(rule([{ type: "country", value: "US" }]), "country", undefined);
+    expect(r.when).toEqual([]);
+  });
+});

@@ -23,7 +23,9 @@ const banner = `// ==UserScript==
 // @grant        GM_getValue
 // @grant        GM_setValue
 // @grant        GM_registerMenuCommand
+// @grant        GM_xmlhttpRequest
 // @grant        unsafeWindow
+// @connect      lichess.org
 // @downloadURL  ${RAW_URL}
 // @updateURL    ${RAW_URL}
 // @noframes

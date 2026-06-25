@@ -126,4 +126,21 @@ describe("sortRules", () => {
     const first = rule({ id: "first", order: 1, when: [{ type: "outcome", value: "win" }], message: "" });
     expect(sortRules([second, first]).map((r) => r.id)).toEqual(["first", "second"]);
   });
+
+  test("sorts country above username above method above outcome on the weight tiebreak", () => {
+    const mk = (id: string, type: "country" | "username" | "method" | "outcome", value: string) => ({
+      id,
+      enabled: true,
+      order: 0,
+      when: [{ type, value } as const],
+      message: id,
+    });
+    const rules = [
+      mk("outcome", "outcome", "win"),
+      mk("method", "method", "mate"),
+      mk("username", "username", "bob"),
+      mk("country", "country", "US"),
+    ];
+    expect(sortRules(rules).map((r) => r.id)).toEqual(["country", "username", "method", "outcome"]);
+  });
 });

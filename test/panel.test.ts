@@ -114,4 +114,43 @@ describe("renderPanel", () => {
     sel.dispatchEvent(new Event("change", { bubbles: true }));
     expect(handlers.onUpdateRule).toHaveBeenCalledWith("ez-on-flag", { method: undefined });
   });
+
+  test("renders username and country inputs prefilled from the rule", () => {
+    const config = makeConfig();
+    config.rules[0].when.push({ type: "username", value: "^bob" });
+    config.rules[0].when.push({ type: "country", value: "US, CA" });
+    renderPanel(root, config, handlers);
+    const card = root.querySelector('[data-rule-id="ez-on-flag"]')!;
+    expect(card.querySelector<HTMLInputElement>(".aez-username")!.value).toBe("^bob");
+    expect(card.querySelector<HTMLInputElement>(".aez-country")!.value).toBe("US, CA");
+  });
+
+  test("editing the username input emits an onUpdateRule patch", () => {
+    renderPanel(root, makeConfig(), handlers);
+    const card = root.querySelector('[data-rule-id="ez-on-flag"]')!;
+    const input = card.querySelector<HTMLInputElement>(".aez-username")!;
+    input.value = "hikaru";
+    input.dispatchEvent(new Event("input"));
+    expect(handlers.onUpdateRule).toHaveBeenCalledWith("ez-on-flag", { username: "hikaru" });
+  });
+
+  test("clearing the country input patches it to undefined", () => {
+    const config = makeConfig();
+    config.rules[0].when.push({ type: "country", value: "US" });
+    renderPanel(root, config, handlers);
+    const card = root.querySelector('[data-rule-id="ez-on-flag"]')!;
+    const input = card.querySelector<HTMLInputElement>(".aez-country")!;
+    input.value = "";
+    input.dispatchEvent(new Event("input"));
+    expect(handlers.onUpdateRule).toHaveBeenCalledWith("ez-on-flag", { country: undefined });
+  });
+
+  test("an invalid username regex is not stored", () => {
+    renderPanel(root, makeConfig(), handlers);
+    const card = root.querySelector('[data-rule-id="ez-on-flag"]')!;
+    const input = card.querySelector<HTMLInputElement>(".aez-username")!;
+    input.value = "[";
+    input.dispatchEvent(new Event("input"));
+    expect(handlers.onUpdateRule).not.toHaveBeenCalled();
+  });
 });

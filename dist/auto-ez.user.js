@@ -9,7 +9,9 @@
 // @grant        GM_getValue
 // @grant        GM_setValue
 // @grant        GM_registerMenuCommand
+// @grant        GM_xmlhttpRequest
 // @grant        unsafeWindow
+// @connect      lichess.org
 // @downloadURL  https://raw.githubusercontent.com/zdavison/auto-ez/main/dist/auto-ez.user.js
 // @updateURL    https://raw.githubusercontent.com/zdavison/auto-ez/main/dist/auto-ez.user.js
 // @noframes
@@ -105,6 +107,57 @@ function getEligibleContext(root, pathname) {
   return { gameId: idInfo.gameId, ourColor, opponent: rest };
 }
 
+// src/detector/country.ts
+var cache = new Map;
+var inFlight = new Map;
+function createLichessCountrySource() {
+  return (username) => new Promise((resolve) => {
+    if (typeof GM_xmlhttpRequest !== "function")
+      return resolve(undefined);
+    const url = `https://lichess.org/api/user/${encodeURIComponent(username)}`;
+    try {
+      GM_xmlhttpRequest({
+        method: "GET",
+        url,
+        onload: (r) => {
+          if (r.status < 200 || r.status >= 300)
+            return resolve(undefined);
+          try {
+            const data = JSON.parse(r.responseText);
+            const country = data.profile?.country;
+            resolve(typeof country === "string" && country ? country : undefined);
+          } catch {
+            resolve(undefined);
+          }
+        },
+        onerror: () => resolve(undefined),
+        ontimeout: () => resolve(undefined)
+      });
+    } catch {
+      resolve(undefined);
+    }
+  });
+}
+var defaultSource = createLichessCountrySource();
+function prefetchCountry(username, source = defaultSource) {
+  if (!username)
+    return;
+  const key = username.toLowerCase();
+  if (cache.has(key) || inFlight.has(key))
+    return;
+  const promise = source(username).then((country) => {
+    cache.set(key, country);
+  }).catch(() => {
+    cache.set(key, undefined);
+  }).finally(() => {
+    inFlight.delete(key);
+  });
+  inFlight.set(key, promise);
+}
+function getCachedCountry(username) {
+  return cache.get(username.toLowerCase());
+}
+
 // src/detector/result.ts
 var STATUS_BY_ID = {
   30: "mate",
@@ -161,12 +214,37 @@ var PROPERTY_PRIORITY = {
   method: 50,
   outcome: 40
 };
+var warned = new Set;
+function warnOnce(message) {
+  if (warned.has(message))
+    return;
+  warned.add(message);
+  console.warn(`[auto-ez] ${message}`);
+}
 function evaluateCondition(spec, result) {
   switch (spec.type) {
     case "outcome":
       return result.outcome === spec.value;
     case "method":
       return result.method === spec.value;
+    case "username": {
+      const name = result.opponent.username;
+      if (!name)
+        return false;
+      try {
+        return new RegExp(spec.value, "i").test(name);
+      } catch {
+        warnOnce(`invalid username regex: ${spec.value}`);
+        return false;
+      }
+    }
+    case "country": {
+      const country = result.opponent.country?.toLowerCase();
+      if (!country)
+        return false;
+      const wanted = spec.value.split(",").map((c) => c.trim().toLowerCase()).filter(Boolean);
+      return wanted.includes(country);
+    }
   }
 }
 
@@ -311,6 +389,10 @@ function ruleToSlots(rule) {
       slots.outcome = c.value;
     else if (c.type === "method" && slots.method === undefined)
       slots.method = c.value;
+    else if (c.type === "username" && slots.username === undefined)
+      slots.username = c.value;
+    else if (c.type === "country" && slots.country === undefined)
+      slots.country = c.value;
   }
   return slots;
 }
@@ -357,6 +439,31 @@ function buildRuleCard(rule, handlers) {
   outcome.addEventListener("change", () => handlers.onUpdateRule(rule.id, { outcome: outcome.value || undefined }));
   const method = buildSelect("aez-method", METHOD_OPTIONS, slots.method);
   method.addEventListener("change", () => handlers.onUpdateRule(rule.id, { method: method.value || undefined }));
+  const username = document.createElement("input");
+  username.type = "text";
+  username.className = "aez-username";
+  username.placeholder = "regex…";
+  username.value = slots.username ?? "";
+  username.addEventListener("input", () => {
+    const value = username.value || undefined;
+    if (value !== undefined) {
+      try {
+        new RegExp(value);
+      } catch {
+        username.setCustomValidity("Invalid regex");
+        username.reportValidity();
+        return;
+      }
+    }
+    username.setCustomValidity("");
+    handlers.onUpdateRule(rule.id, { username: value });
+  });
+  const country = document.createElement("input");
+  country.type = "text";
+  country.className = "aez-country";
+  country.placeholder = "US, CA…";
+  country.value = slots.country ?? "";
+  country.addEventListener("input", () => handlers.onUpdateRule(rule.id, { country: country.value || undefined }));
   const message = document.createElement("input");
   message.type = "text";
   message.className = "aez-message";
@@ -372,7 +479,7 @@ function buildRuleCard(rule, handlers) {
   del.addEventListener("click", () => handlers.onDeleteRule(rule.id));
   const condWrap = document.createElement("div");
   condWrap.className = "aez-conditions";
-  condWrap.append(labeled("Outcome", outcome), labeled("Method", method));
+  condWrap.append(labeled("Outcome", outcome), labeled("Method", method), labeled("Username", username), labeled("Country", country));
   card.append(enabled, condWrap, message, del);
   return card;
 }
@@ -508,6 +615,10 @@ function patchRule(rule, patch) {
     next = applySlot(next, "outcome", patch.outcome);
   if ("method" in patch)
     next = applySlot(next, "method", patch.method);
+  if ("username" in patch)
+    next = applySlot(next, "username", patch.username);
+  if ("country" in patch)
+    next = applySlot(next, "country", patch.country);
   return next;
 }
 function mountUI(storage, parent = document.body) {
@@ -590,6 +701,7 @@ function handleEndData(endData) {
       explainEligibility();
       return debug("not an eligible game (spectating / vs computer / correspondence)");
     }
+    context.opponent.country = getCachedCountry(context.opponent.username ?? "");
     const result = normalizeEndData(endData, context);
     debug("normalized result", result);
     const rule = matchRule(result, config.rules);
@@ -616,6 +728,27 @@ function handleEndData(endData) {
     console.warn(`${LOG} end-of-game handling failed`, err);
   }
 }
+function prefetchOpponentCountry() {
+  try {
+    const context = getEligibleContext(document, location.pathname);
+    const username = context?.opponent.username;
+    if (username)
+      prefetchCountry(username);
+  } catch (err) {
+    console.warn(`${LOG} country prefetch failed`, err);
+  }
+}
+function startCountryPrefetch() {
+  prefetchOpponentCountry();
+  try {
+    const observer = new MutationObserver(() => prefetchOpponentCountry());
+    const target = document.body ?? document.documentElement;
+    if (target)
+      observer.observe(target, { childList: true, subtree: true });
+  } catch (err) {
+    console.warn(`${LOG} country watcher failed`, err);
+  }
+}
 function registerMenu() {
   if (typeof GM_registerMenuCommand !== "function")
     return;
@@ -636,6 +769,7 @@ function main() {
   try {
     saveConfig(storage, loadConfig(storage));
     installWebSocketHook(handleEndData, { scope: pageScope, onMessageType: noteMessageType });
+    startCountryPrefetch();
     registerMenu();
     mountWhenReady();
     console.info(`${LOG} active${DEBUG ? " (debug)" : ""}`);

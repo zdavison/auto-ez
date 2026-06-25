@@ -13,6 +13,7 @@ import {
   readOpponent,
   isRealtime,
 } from "./detector/pageContext.ts";
+import { prefetchCountry, getCachedCountry } from "./detector/country.ts";
 import { normalizeEndData, type EndData } from "./detector/result.ts";
 import { matchRule } from "./matcher.ts";
 import { SendGate } from "./gate.ts";
@@ -86,6 +87,7 @@ function handleEndData(endData: EndData): void {
       return debug("not an eligible game (spectating / vs computer / correspondence)");
     }
 
+    context.opponent.country = getCachedCountry(context.opponent.username ?? "");
     const result = normalizeEndData(endData, context);
     debug("normalized result", result);
 
@@ -108,6 +110,33 @@ function handleEndData(endData: EndData): void {
     }, sendDelayMs());
   } catch (err) {
     console.warn(`${LOG} end-of-game handling failed`, err);
+  }
+}
+
+/** If the current page is an eligible game, begin fetching the opponent's country. */
+function prefetchOpponentCountry(): void {
+  try {
+    const context = getEligibleContext(document, location.pathname);
+    const username = context?.opponent.username;
+    if (username) prefetchCountry(username);
+  } catch (err) {
+    console.warn(`${LOG} country prefetch failed`, err);
+  }
+}
+
+/**
+ * Pre-fetch the opponent's country as games begin. Lichess is a SPA, so "game start"
+ * is the opponent block appearing/changing; a MutationObserver re-checks on DOM
+ * changes. Prefetch is idempotent/cache-deduped, so re-firing is harmless.
+ */
+function startCountryPrefetch(): void {
+  prefetchOpponentCountry();
+  try {
+    const observer = new MutationObserver(() => prefetchOpponentCountry());
+    const target = document.body ?? document.documentElement;
+    if (target) observer.observe(target, { childList: true, subtree: true });
+  } catch (err) {
+    console.warn(`${LOG} country watcher failed`, err);
   }
 }
 
@@ -134,6 +163,7 @@ function main(): void {
     // Ensure a config exists in storage so the menu/defaults are stable.
     saveConfig(storage, loadConfig(storage));
     installWebSocketHook(handleEndData, { scope: pageScope, onMessageType: noteMessageType });
+    startCountryPrefetch();
     registerMenu();
     mountWhenReady();
     console.info(`${LOG} active${DEBUG ? " (debug)" : ""}`);
