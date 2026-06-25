@@ -6,7 +6,13 @@
  * no-ops, so the script can never break the lichess page.
  */
 import { installWebSocketHook } from "./detector/wsHook.ts";
-import { getEligibleContext } from "./detector/pageContext.ts";
+import {
+  getEligibleContext,
+  parseGameId,
+  readOrientation,
+  readOpponent,
+  isRealtime,
+} from "./detector/pageContext.ts";
 import { normalizeEndData, type EndData } from "./detector/result.ts";
 import { matchRule } from "./matcher.ts";
 import { SendGate } from "./gate.ts";
@@ -18,35 +24,82 @@ const LOG = "[auto-bm]";
 const MIN_DELAY_MS = 500;
 const MAX_DELAY_MS = 1500;
 
+/**
+ * Verbose diagnostics while we validate detection against the live page. Flip to
+ * `false` once end-of-game detection is confirmed working.
+ */
+const DEBUG = true;
+
 declare function GM_registerMenuCommand(name: string, fn: () => void): void;
+/**
+ * The real page `window` in a userscript sandbox. Reassigning `globalThis.WebSocket`
+ * only affects the sandbox realm; lichess constructs its socket from the page realm,
+ * so we must hook `unsafeWindow.WebSocket`. Falls back to `globalThis` outside
+ * Tampermonkey (e.g. a future extension running in the page's main world).
+ */
+declare const unsafeWindow: (Window & typeof globalThis) | undefined;
+const pageScope: { WebSocket: typeof WebSocket } =
+  typeof unsafeWindow !== "undefined" && unsafeWindow ? unsafeWindow : globalThis;
 
 const storage = createDefaultStorage();
 const gate = new SendGate(loadConfig(storage).globalCooldownMs);
+const seenMessageTypes = new Set<string>();
+
+function debug(...args: unknown[]): void {
+  if (DEBUG) console.info(LOG, ...args);
+}
 
 /** Random human-ish delay before sending. */
 function sendDelayMs(): number {
   return MIN_DELAY_MS + Math.random() * (MAX_DELAY_MS - MIN_DELAY_MS);
 }
 
+/** Debug-only: log each distinct inbound socket message type once. */
+function noteMessageType(type: string | undefined): void {
+  if (!DEBUG || !type || seenMessageTypes.has(type)) return;
+  seenMessageTypes.add(type);
+  debug("socket message type seen:", type);
+}
+
+/** Debug-only: explain why a game is or isn't eligible, checking each signal. */
+function explainEligibility(): void {
+  if (!DEBUG) return;
+  debug("eligibility check", {
+    pathname: location.pathname,
+    parsedId: parseGameId(location.pathname),
+    orientation: readOrientation(document),
+    opponent: readOpponent(document),
+    isRealtime: isRealtime(document),
+  });
+}
+
 function handleEndData(endData: EndData): void {
   try {
+    debug("endData received", endData);
     const config = loadConfig(storage);
-    if (!config.enabled) return;
+    if (!config.enabled) return debug("disabled; ignoring");
 
     const context = getEligibleContext(document, location.pathname);
-    if (!context) return; // spectating, vs computer, correspondence, etc.
+    if (!context) {
+      explainEligibility();
+      return debug("not an eligible game (spectating / vs computer / correspondence)");
+    }
 
     const result = normalizeEndData(endData, context);
-    const rule = matchRule(result, config.rules);
-    if (!rule) return;
+    debug("normalized result", result);
 
-    if (!gate.tryClaim(rule, result.gameId, Date.now())) return;
+    const rule = matchRule(result, config.rules);
+    if (!rule) return debug("no rule matched");
+    debug("matched rule", rule.id, "->", rule.message);
+
+    if (!gate.tryClaim(rule, result.gameId, Date.now())) return debug("blocked by dedupe/cooldown");
 
     const message = rule.message;
     setTimeout(() => {
       try {
         const sent = typeAndSend(document, message);
-        if (!sent) console.warn(`${LOG} chat input not found; message not sent`);
+        if (sent) debug("sent:", message);
+        else console.warn(`${LOG} chat input not found; message not sent`);
       } catch (err) {
         console.warn(`${LOG} send failed`, err);
       }
@@ -69,9 +122,9 @@ function main(): void {
   try {
     // Ensure a config exists in storage so the menu/defaults are stable.
     saveConfig(storage, loadConfig(storage));
-    installWebSocketHook(handleEndData);
+    installWebSocketHook(handleEndData, { scope: pageScope, onMessageType: noteMessageType });
     registerMenu();
-    console.info(`${LOG} active`);
+    console.info(`${LOG} active${DEBUG ? " (debug)" : ""}`);
   } catch (err) {
     console.warn(`${LOG} failed to initialize`, err);
   }
