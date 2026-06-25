@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         auto-ez
 // @namespace    https://github.com/auto-ez
-// @version      0.1.0
+// @version      0.2.0
 // @description  Auto-send chat messages on lichess.org under configurable conditions (e.g. "ez" on a win by flag).
 // @author       auto-ez
 // @match        https://lichess.org/*
